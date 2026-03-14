@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -8,305 +8,375 @@ import {
   useColorScheme,
   StatusBar,
   SafeAreaView,
-} from 'react-native';
+} from 'react-native'
+import { colours } from '../../constants/colours'
+import { typography } from '../../constants/typography'
+import { spacing } from '../../constants/spacing'
 
-// ─────────────────────────────────────
-// DESIGN TOKENS
-// ─────────────────────────────────────
-const tokens = {
-  dark: {
-    bg:           '#0d0d0d',
-    bgCard:       '#121212',
-    bgChip:       '#131313',
-    bgHero:       '#121212',
-    bgTogOff:     '#181818',
-    bgTogOn:      '#34d399',
-    bgNav:        '#0d0d0d',
-    border:       '#1d1d1d',
-    borderHero:   '#1e1e1e',
-    borderTog:    '#252525',
-    borderNav:    '#1a1a1a',
-    text:         '#e8e8e8',
-    textSub:      '#3a3a3a',
-    textMuted:    '#3d3d3d',
-    textMeta:     '#383838',
-    textNav:      '#2e2e2e',
-    textRec:      '#2e2e2e',
-    accent:       '#34d399',
-    accentDark:   '#059669',
-    ctaBg:        '#34d399',
-    ctaText:      '#060d0a',
-    togOnText:    '#fff',
-    togOffText:   '#505050',
-    pbarBg:       '#1e1e1e',
-    pbarFill:     ['#34d399', '#059669'] as [string, string],
-    sessDivider:  '#161616',
-    badgeGBg:     'rgba(52,211,153,0.1)',  badgeGFg: '#34d399',
-    badgeABg:     'rgba(251,191,36,0.1)',  badgeAFg: '#fbbf24',
-    badgeRBg:     'rgba(248,113,113,0.1)', badgeRFg: '#f87171',
-  },
-  light: {
-    bg:           '#f3f3f1',
-    bgCard:       '#e9e9e7',
-    bgChip:       '#e9e9e7',
-    bgHero:       '#e4f5ee',
-    bgTogOff:     '#fff',
-    bgTogOn:      '#059669',
-    bgNav:        '#f3f3f1',
-    border:       '#dededd',
-    borderHero:   '#c8e8d8',
-    borderTog:    '#c8e8d8',
-    borderNav:    '#e0e0de',
-    text:         '#111',
-    textSub:      '#b0b0b0',
-    textMuted:    '#aaa',
-    textMeta:     '#b0b0b0',
-    textNav:      '#ccc',
-    textRec:      '#c4c4c4',
-    accent:       '#059669',
-    accentDark:   '#047857',
-    ctaBg:        '#059669',
-    ctaText:      '#fff',
-    togOnText:    '#fff',
-    togOffText:   '#7aab96',
-    pbarBg:       '#c8e8d8',
-    pbarFill:     ['#34d399', '#059669'] as [string, string],
-    sessDivider:  '#e4e4e2',
-    badgeGBg:     '#f0fdf4', badgeGFg: '#16a34a',
-    badgeABg:     '#fffbeb', badgeAFg: '#d97706',
-    badgeRBg:     '#fff1f2', badgeRFg: '#dc2626',
-  },
-};
-
-// ─────────────────────────────────────
-// TYPES
-// ─────────────────────────────────────
-type Theme = typeof tokens.dark;
-type AccentMode = 'GB' | 'US';
-type SessionResult = 'g' | 'a' | 'r';
+type AccentMode = 'GB' | 'US'
+type SessionResult = 'good' | 'avg' | 'poor'
 
 interface Session {
-  id: string;
-  name: string;
-  meta: string;
-  result: SessionResult;
-  score: string;
+  id: string
+  name: string
+  meta: string
+  score: number
+  result: SessionResult
+  date: string
 }
 
-// ─────────────────────────────────────
-// MOCK DATA
-// ─────────────────────────────────────
-const SESSIONS: Session[] = [
-  { id: '1', name: 'Reading Passage 3', meta: '14 words · British · Today',     result: 'g', score: '84%' },
-  { id: '2', name: 'Word Drill — /th/', meta: '22 words · British · Yesterday', result: 'a', score: '61%' },
-  { id: '3', name: 'Reading Passage 2', meta: '18 words · American · 2d ago',   result: 'g', score: '91%' },
-  { id: '4', name: 'Reading Passage 1', meta: '11 words · American · 3d ago',   result: 'r', score: '44%' },
-];
+const MOCK_SESSIONS: Session[] = [
+  { id: '1', name: 'Reading Passage 3', meta: '14 words · British · Today', score: 84, result: 'good', date: '' },
+  { id: '2', name: 'Word Drill — /th/', meta: '22 words · British · Yesterday', score: 61, result: 'avg', date: '' },
+  { id: '3', name: 'Reading Passage 2', meta: '18 words · American · 2d ago', score: 91, result: 'good', date: '' },
+  { id: '4', name: 'Reading Passage 1', meta: '11 words · American · 3d ago', score: 44, result: 'poor', date: '' },
+]
 
-// ─────────────────────────────────────
-// SUB-COMPONENTS
-// ─────────────────────────────────────
-function StatChip({ value, label, highlight, t }: {
-  value: string; label: string; highlight?: boolean; t: Theme;
+type ColourTokens = typeof colours.light | typeof colours.dark
+
+function getScoreColors(
+  result: SessionResult,
+  t: ColourTokens
+): { bg: string; text: string } {
+  if (result === 'good') return { bg: t.scoreGoodBg, text: t.scoreGoodText }
+  if (result === 'avg') return { bg: t.scoreAvgBg, text: t.scoreAvgText }
+  return { bg: t.scorePoorBg, text: t.scorePoorText }
+}
+
+function AccuracyRing({
+  value,
+  size,
+  strokeWidth,
+  trackColor,
+  fillColor,
+  textColor,
+}: {
+  value: number
+  size: number
+  strokeWidth: number
+  trackColor: string
+  fillColor: string
+  textColor: string
 }) {
+  const r = size / 2
   return (
-    <View style={[styles.chip, { backgroundColor: t.bgChip, borderColor: t.border }]}>
-      <Text style={[styles.chipVal, { color: highlight ? t.accent : t.text }]}>{value}</Text>
-      <Text style={[styles.chipLbl, { color: t.textMuted }]}>{label}</Text>
-    </View>
-  );
-}
-
-function ScoreBadge({ result, score, t }: { result: SessionResult; score: string; t: Theme }) {
-  const map = {
-    g: { bg: t.badgeGBg, fg: t.badgeGFg },
-    a: { bg: t.badgeABg, fg: t.badgeAFg },
-    r: { bg: t.badgeRBg, fg: t.badgeRFg },
-  };
-  const { bg, fg } = map[result];
-  return (
-    <View style={[styles.badge, { backgroundColor: bg }]}>
-      <Text style={[styles.badgeText, { color: fg }]}>{score}</Text>
-    </View>
-  );
-}
-
-function SessionRow({ session, t, isLast }: { session: Session; t: Theme; isLast: boolean }) {
-  return (
-    <View style={[styles.sessRow, !isLast && { borderBottomColor: t.sessDivider, borderBottomWidth: 1 }]}>
-      <ScoreBadge result={session.result} score={session.score} t={t} />
-      <View style={styles.sessInfo}>
-        <Text style={[styles.sessName, { color: t.text }]}>{session.name}</Text>
-        <Text style={[styles.sessMeta, { color: t.textMeta }]}>{session.meta}</Text>
+    <View style={[styles.ringWrap, { width: size, height: size }]}>
+      <View
+        style={[
+          styles.ringTrack,
+          {
+            width: size,
+            height: size,
+            borderRadius: r,
+            borderWidth: strokeWidth,
+            borderColor: trackColor,
+          },
+        ]}
+      />
+      <View
+        style={[
+          styles.ringFill,
+          {
+            width: size,
+            height: size,
+            borderRadius: r,
+            borderWidth: strokeWidth,
+            borderTopColor: fillColor,
+            borderRightColor: 'transparent',
+            borderBottomColor: 'transparent',
+            borderLeftColor: 'transparent',
+            transform: [{ rotate: `${-90 + (value / 100) * 360}deg` }],
+          },
+        ]}
+      />
+      <View style={[StyleSheet.absoluteFillObject, styles.ringCenter]}>
+        <Text style={[styles.ringNumber, { color: textColor }]}>{value}%</Text>
       </View>
     </View>
-  );
+  )
 }
 
-function NavTab({ label, active, t, onPress }: {
-  label: string; active: boolean; t: Theme; onPress: () => void;
+function SessionRow({
+  session,
+  t,
+  isLast,
+}: {
+  session: Session
+  t: ColourTokens
+  isLast: boolean
 }) {
+  const { bg, text } = getScoreColors(session.result, t)
   return (
-    <TouchableOpacity style={styles.navTab} onPress={onPress} activeOpacity={0.7}>
-      <Text style={{ fontSize: 18, color: active ? t.accent : t.textNav }}>
-        {label === 'Home' ? '⌂' : label === 'Practice' ? '♪' : label === 'Progress' ? '▦' : '⚙'}
-      </Text>
-      <Text style={[styles.navLabel, { color: active ? t.accent : t.textNav }]}>{label}</Text>
-    </TouchableOpacity>
-  );
+    <View style={[styles.sessionRow, !isLast && { borderBottomWidth: 1, borderBottomColor: t.divider }]}>
+      <View style={[styles.scoreBadge, { backgroundColor: bg }]}>
+        <Text style={[styles.scoreBadgeText, { color: text }]}>{session.score}%</Text>
+      </View>
+      <View style={styles.sessionInfo}>
+        <Text style={[styles.sessionName, { color: t.textPrimary }]}>{session.name}</Text>
+        <Text style={[styles.sessionMeta, { color: t.textMuted }]}>{session.meta}</Text>
+      </View>
+    </View>
+  )
 }
 
-// ─────────────────────────────────────
-// MAIN SCREEN
-// ─────────────────────────────────────
 export default function HomeScreen() {
-  const scheme = useColorScheme();
-  const t: Theme = scheme === 'dark' ? tokens.dark : tokens.light;
+  const scheme = useColorScheme()
+  const t = scheme === 'dark' ? colours.dark : colours.light
+  const [accentMode, setAccentMode] = useState<AccentMode>('GB')
 
-  const [accent, setAccent] = useState<AccentMode>('GB');
-  const [activeTab, setActiveTab] = useState('Home');
+  const accuracy = 78
+  const streak = 7
+  const totalWords = 142
+  const trend = '+5%'
+  const weekBars = [1, 0.8, 1, 0.6, 1, 0.9, 0]
+  const weeklyBars = [4, 3, 5, 2, 6, 4, 3]
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: t.bg }]}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: t.background }]}>
       <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
-
       <ScrollView
-        style={{ backgroundColor: t.bg }}
+        style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* App header */}
-        <View style={styles.appHeader}>
-          <Text style={[styles.wordmark, { color: t.text }]}>
-            Accent<Text style={{ color: t.accent }}>AI</Text>
-          </Text>
-          <View style={[styles.avatar, { backgroundColor: t.bgChip, borderColor: t.border }]}>
-            <Text style={[styles.avatarText, { color: t.accent }]}>JD</Text>
-          </View>
-        </View>
-
         {/* Greeting */}
-        <View style={styles.greeting}>
-          <Text style={[styles.greetSub, { color: t.textSub }]}>GOOD MORNING</Text>
-          <Text style={[styles.greetMain, { color: t.text }]}>Josh Davies</Text>
-        </View>
-
-        {/* Stat chips */}
-        <View style={styles.chips}>
-          <StatChip value="7"   label="Streak"   t={t} />
-          <StatChip value="142" label="Words"     t={t} />
-          <StatChip value="78%" label="Accuracy"  t={t} highlight />
-        </View>
-
-        {/* Hero card */}
-        <View style={[styles.hero, { backgroundColor: t.bgHero, borderColor: t.borderHero }]}>
-          <Text style={[styles.heroEye, { color: t.accent }]}>TODAY'S SESSION</Text>
-          <Text style={[styles.heroTitle, { color: t.text }]}>
-            Ready to practise?{'\n'}Let's keep that streak going.
-          </Text>
-          <View style={styles.prow}>
-            <Text style={[styles.plbl, { color: t.textMuted }]}>Weekly accuracy</Text>
-            <Text style={[styles.pval, { color: t.accent }]}>78%</Text>
+        <View style={styles.greetingRow}>
+          <View style={styles.greetingLeft}>
+            <Text style={[styles.dateText, { color: t.textMuted }]}>
+              {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}
+            </Text>
+            <Text style={[styles.greetTitle, { color: t.textPrimary }]}>
+              Hey Josh, keep going.
+            </Text>
           </View>
-          <View style={[styles.pbarBg, { backgroundColor: t.pbarBg }]}>
-            <View style={[styles.pbarFill, { backgroundColor: t.accent, width: '78%' }]} />
-          </View>
-          <View style={styles.heroFoot}>
-            <TouchableOpacity
-              style={[styles.cta, { backgroundColor: t.ctaBg }]}
-              activeOpacity={0.85}
-            >
-              <Text style={[styles.ctaText, { color: t.ctaText }]}>Start reading</Text>
-            </TouchableOpacity>
-            <View style={styles.toggles}>
-              {(['GB', 'US'] as AccentMode[]).map(mode => (
-                <TouchableOpacity
-                  key={mode}
-                  style={[styles.tog, {
-                    backgroundColor: accent === mode ? t.bgTogOn : t.bgTogOff,
-                    borderColor:     accent === mode ? t.bgTogOn : t.borderTog,
-                  }]}
-                  onPress={() => setAccent(mode)}
-                  activeOpacity={0.8}
+          <View style={styles.gbUsRow}>
+            {(['GB', 'US'] as AccentMode[]).map((mode) => (
+              <TouchableOpacity
+                key={mode}
+                style={[
+                  styles.gbUsBtn,
+                  {
+                    backgroundColor: accentMode === mode ? t.ctaBackground : 'transparent',
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+                onPress={() => setAccentMode(mode)}
+                activeOpacity={0.8}
+              >
+                <Text
+                  style={[
+                    styles.gbUsText,
+                    { color: accentMode === mode ? t.ctaText : t.textMuted },
+                  ]}
                 >
-                  <Text style={[styles.togText, { color: accent === mode ? t.togOnText : t.togOffText }]}>
-                    {mode === 'GB' ? '🇬🇧 GB' : '🇺🇸 US'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                  {mode}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
-        {/* Recent sessions */}
-        <View style={styles.recHeader}>
-          <Text style={[styles.recLbl, { color: t.textRec }]}>RECENT SESSIONS</Text>
-          <TouchableOpacity>
-            <Text style={[styles.recAll, { color: t.accent }]}>See all</Text>
+        {/* RingStat dark card */}
+        <View
+          style={[
+            styles.statCard,
+            {
+              backgroundColor: t.statCardBackground,
+              borderColor: t.statCardBorder,
+            },
+          ]}
+        >
+          <AccuracyRing
+            value={accuracy}
+            size={70}
+            strokeWidth={6}
+            trackColor={t.statRingTrack}
+            fillColor={t.statCardRing}
+            textColor={t.statCardText}
+          />
+          <View style={styles.statRow}>
+            <Text style={[styles.statLabel, { color: t.statCardMuted }]}>Streak</Text>
+            <View style={[styles.statDivider, { backgroundColor: t.statCardMuted }]} />
+            <Text style={[styles.statLabel, { color: t.statCardMuted }]}>Words</Text>
+            <View style={[styles.statDivider, { backgroundColor: t.statCardMuted }]} />
+            <Text style={[styles.statLabel, { color: t.statCardMuted }]}>Trend</Text>
+          </View>
+          <View style={styles.statRow}>
+            <Text style={[styles.statValue, { color: t.statCardText }]}>{streak}</Text>
+            <View style={[styles.statDivider, { backgroundColor: t.statCardMuted }]} />
+            <Text style={[styles.statValue, { color: t.statCardText }]}>{totalWords}</Text>
+            <View style={[styles.statDivider, { backgroundColor: t.statCardMuted }]} />
+            <Text style={[styles.statValue, { color: t.accentSecondary }]}>{trend}</Text>
+          </View>
+        </View>
+
+        {/* Up Next card */}
+        <View style={[styles.upNextCard, { backgroundColor: t.cardBackground, borderColor: t.cardBorder }]}>
+          <Text style={[styles.cardTitle, { color: t.textPrimary }]}>Reading Passage 4</Text>
+          <Text style={[styles.metaText, { color: t.textMuted }]}>18 words · British</Text>
+          <View style={styles.weekBarsRow}>
+            {weekBars.map((fill, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.weekBarBg,
+                  { backgroundColor: t.divider },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.weekBarFill,
+                    { backgroundColor: t.accent, width: `${fill * 100}%` },
+                  ]}
+                />
+              </View>
+            ))}
+          </View>
+          <TouchableOpacity
+            style={[styles.ctaBtn, { backgroundColor: t.ctaBackground }]}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.ctaText, { color: t.ctaText }]}>Start session</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.sessList}>
-          {SESSIONS.map((s, i) => (
-            <SessionRow key={s.id} session={s} t={t} isLast={i === SESSIONS.length - 1} />
-          ))}
+        {/* Weekly bar chart */}
+        <View style={styles.weeklySection}>
+          <Text style={[styles.sectionLabel, { color: t.textMuted }]}>THIS WEEK</Text>
+          <View style={styles.weeklyBarsRow}>
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((label, i) => (
+              <View key={i} style={styles.weeklyBarCol}>
+                <View
+                  style={[
+                    styles.weeklyBarBg,
+                    { backgroundColor: t.divider },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.weeklyBarFill,
+                      {
+                        height: `${(weeklyBars[i] / 6) * 100}%`,
+                        backgroundColor: t.accent,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text style={[styles.weeklyBarLabel, { color: t.textMuted }]}>{label}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
-        <View style={{ height: 20 }} />
-      </ScrollView>
+        {/* Recent Sessions */}
+        <View style={styles.recentSection}>
+          <Text style={[styles.sectionLabel, { color: t.textMuted }]}>RECENT SESSIONS</Text>
+          <View style={styles.sessionsList}>
+            {MOCK_SESSIONS.map((session, i) => (
+              <SessionRow
+                key={session.id}
+                session={session}
+                t={t}
+                isLast={i === MOCK_SESSIONS.length - 1}
+              />
+            ))}
+          </View>
+        </View>
 
-      {/* Bottom nav */}
-      <View style={[styles.botNav, { backgroundColor: t.bgNav, borderTopColor: t.borderNav }]}>
-        {['Home', 'Practice', 'Progress', 'Settings'].map(tab => (
-          <NavTab key={tab} label={tab} active={activeTab === tab} t={t} onPress={() => setActiveTab(tab)} />
-        ))}
-      </View>
+        <View style={styles.bottomPad} />
+      </ScrollView>
     </SafeAreaView>
-  );
+  )
 }
 
-// ─────────────────────────────────────
-// STYLES
-// ─────────────────────────────────────
 const styles = StyleSheet.create({
-  safe:          { flex: 1 },
-  scrollContent: { paddingBottom: 12 },
-  appHeader:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 22, paddingTop: 14 },
-  wordmark:      { fontSize: 15, fontWeight: '600', letterSpacing: 0.2 },
-  avatar:        { width: 34, height: 34, borderRadius: 10, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  avatarText:    { fontSize: 11, fontWeight: '700' },
-  greeting:      { paddingHorizontal: 22, paddingTop: 22 },
-  greetSub:      { fontSize: 11, fontWeight: '400', letterSpacing: 1.2, marginBottom: 3 },
-  greetMain:     { fontSize: 24, fontWeight: '600', letterSpacing: -0.5, lineHeight: 28 },
-  chips:         { flexDirection: 'row', gap: 7, paddingHorizontal: 22, paddingTop: 14 },
-  chip:          { flex: 1, borderRadius: 10, borderWidth: 1, paddingVertical: 10, alignItems: 'center', gap: 3 },
-  chipVal:       { fontSize: 16, fontWeight: '700', letterSpacing: -0.5 },
-  chipLbl:       { fontSize: 9, fontWeight: '500', letterSpacing: 0.5, textTransform: 'uppercase' },
-  hero:          { marginHorizontal: 22, marginTop: 14, borderRadius: 16, borderWidth: 1, padding: 18 },
-  heroEye:       { fontSize: 9, fontWeight: '600', letterSpacing: 1.5, marginBottom: 7 },
-  heroTitle:     { fontSize: 16, fontWeight: '600', lineHeight: 23, marginBottom: 14 },
-  prow:          { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  plbl:          { fontSize: 10 },
-  pval:          { fontSize: 10, fontWeight: '600' },
-  pbarBg:        { height: 4, borderRadius: 2, marginBottom: 16 },
-  pbarFill:      { height: 4, borderRadius: 2 },
-  heroFoot:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cta:           { borderRadius: 9, paddingVertical: 11, paddingHorizontal: 18 },
-  ctaText:       { fontSize: 13, fontWeight: '700' },
-  toggles:       { flexDirection: 'row', gap: 6 },
-  tog:           { borderRadius: 7, paddingVertical: 7, paddingHorizontal: 10, borderWidth: 1 },
-  togText:       { fontSize: 10, fontWeight: '600' },
-  recHeader:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 22, paddingTop: 20, paddingBottom: 10 },
-  recLbl:        { fontSize: 10, fontWeight: '700', letterSpacing: 1.2 },
-  recAll:        { fontSize: 11, fontWeight: '500' },
-  sessList:      { paddingHorizontal: 22 },
-  sessRow:       { flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 10 },
-  badge:         { width: 42, height: 42, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  badgeText:     { fontSize: 12, fontWeight: '700' },
-  sessInfo:      { flex: 1 },
-  sessName:      { fontSize: 13, fontWeight: '500', marginBottom: 2 },
-  sessMeta:      { fontSize: 10 },
-  botNav:        { flexDirection: 'row', justifyContent: 'space-around', paddingTop: 10, paddingBottom: 24, borderTopWidth: 1 },
-  navTab:        { alignItems: 'center', gap: 3 },
-  navLabel:      { fontSize: 9, fontWeight: '500' },
-});
+  safe: { flex: 1 },
+  scroll: { flex: 1 },
+  scrollContent: { paddingHorizontal: spacing.pagePaddingHorizontal, paddingBottom: spacing.sectionGap },
+  greetingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingTop: spacing.sectionGap,
+    marginBottom: spacing.gapBetweenCards,
+  },
+  greetingLeft: { flex: 1 },
+  dateText: { ...typography.meta, marginBottom: 4 },
+  greetTitle: { ...typography.screenTitle },
+  gbUsRow: { flexDirection: 'row', gap: 6, marginLeft: 12 },
+  gbUsBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: spacing.buttonBorderRadius,
+    borderWidth: 1,
+  },
+  gbUsText: { fontSize: 12, fontWeight: '700' },
+  statCard: {
+    borderRadius: spacing.cardBorderRadius,
+    borderWidth: 1,
+    padding: spacing.cardPadding,
+    marginBottom: spacing.gapBetweenCards,
+    alignItems: 'center',
+  },
+  ringWrap: { position: 'relative', marginBottom: 12 },
+  ringTrack: { position: 'absolute' },
+  ringFill: { position: 'absolute' },
+  ringCenter: { alignItems: 'center', justifyContent: 'center' },
+  ringNumber: { ...typography.ringNumber },
+  statRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  statDivider: { width: 1, height: 12, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 1 },
+  statLabel: { ...typography.sectionLabel, fontSize: 9 },
+  statValue: { fontSize: 13, fontWeight: '700' },
+  upNextCard: {
+    borderRadius: spacing.cardBorderRadius,
+    borderWidth: 1,
+    padding: spacing.cardPadding,
+    marginBottom: spacing.gapBetweenCards,
+  },
+  cardTitle: { ...typography.cardTitle, marginBottom: 4 },
+  metaText: { ...typography.meta, marginBottom: 12 },
+  weekBarsRow: { flexDirection: 'row', gap: 4, marginBottom: 14 },
+  weekBarBg: { flex: 1, height: 4, borderRadius: 2, overflow: 'hidden', flexDirection: 'row' },
+  weekBarFill: { height: '100%', borderRadius: 2 },
+  ctaBtn: {
+    borderRadius: spacing.buttonBorderRadius,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  ctaText: { fontSize: 14, fontWeight: '700' },
+  weeklySection: { marginBottom: spacing.sectionGap },
+  sectionLabel: { ...typography.sectionLabel, marginBottom: 10 },
+  weeklyBarsRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
+  weeklyBarCol: { flex: 1, alignItems: 'center' },
+  weeklyBarBg: {
+    width: '100%',
+    height: 48,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 6,
+    justifyContent: 'flex-end',
+  },
+  weeklyBarFill: { width: '100%', borderTopLeftRadius: 4, borderTopRightRadius: 4 },
+  weeklyBarLabel: { ...typography.meta },
+  recentSection: { marginBottom: spacing.sectionGap },
+  sessionsList: {},
+  sessionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.cardPadding,
+  },
+  scoreBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: spacing.badgeBorderRadius,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scoreBadgeText: { fontSize: 12, fontWeight: '700' },
+  sessionInfo: { flex: 1 },
+  sessionName: { fontSize: 12, fontWeight: '600', marginBottom: 2 },
+  sessionMeta: { ...typography.meta },
+  bottomPad: { height: 24 },
+})

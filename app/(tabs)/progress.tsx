@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  useColorScheme,
 } from 'react-native'
 import { colours } from '../../constants/colours'
 import { spacing } from '../../constants/spacing'
@@ -26,15 +27,18 @@ const SESSIONS = [
   { time: '3d ago', name: 'Reading Passage 1', detail: '11 words · American', score: 44 },
 ]
 
-function getScoreStyle(score: number) {
-  if (score >= 75) return { bg: colours.score.greenBg, text: colours.score.green }
-  if (score >= 55) return { bg: colours.score.amberBg, text: colours.score.amber }
-  return { bg: colours.score.redBg, text: colours.score.red }
+function getScoreStyle(score: number, t: typeof colours.light | typeof colours.dark) {
+  if (score >= 75) return { bg: t.scoreGoodBg, text: t.scoreGoodText }
+  if (score >= 55) return { bg: t.scoreAvgBg, text: t.scoreAvgText }
+  return { bg: t.scorePoorBg, text: t.scorePoorText }
 }
 
 export default function ProgressScreen() {
+  const scheme = useColorScheme()
+  const t = scheme === 'dark' ? colours.dark : colours.light
+
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: t.background }]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -42,17 +46,17 @@ export default function ProgressScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.screenTitle}>Progress</Text>
-          <View style={styles.chip}>
-            <Text style={styles.chipText}>This week</Text>
+          <Text style={[styles.screenTitle, { color: t.textPrimary }]}>Progress</Text>
+          <View style={[styles.chip, { backgroundColor: t.sectionBackground, borderColor: t.cardBorder }]}>
+            <Text style={[styles.chipText, { color: t.textPrimary }]}>This week</Text>
           </View>
         </View>
 
         {/* Overall accuracy card */}
-        <View style={styles.card}>
-          <Text style={styles.eyebrow}>OVERALL ACCURACY</Text>
-          <Text style={styles.bigScore}>78%</Text>
-          <Text style={styles.bigScoreDelta}>↑ 4% from last week</Text>
+        <View style={[styles.card, { backgroundColor: t.cardBackground, borderColor: t.cardBorder }]}>
+          <Text style={[styles.eyebrow, { color: t.textMuted }]}>OVERALL ACCURACY</Text>
+          <Text style={[styles.bigScore, { color: t.textPrimary }]}>78%</Text>
+          <Text style={[styles.bigScoreDelta, { color: t.scoreGoodText }]}>↑ 4% from last week</Text>
 
           {/* Bar chart */}
           <View style={styles.barChart}>
@@ -61,36 +65,36 @@ export default function ProgressScreen() {
                 key={i}
                 style={[
                   styles.bar,
-                  { height: `${height}%` },
-                  i === BARS.length - 1 && styles.barHighlight,
+                  { height: `${height}%`, backgroundColor: t.divider },
+                  i === BARS.length - 1 && { backgroundColor: t.black },
                 ]}
               />
             ))}
           </View>
           <View style={styles.barLabels}>
             {BAR_DAYS.map((d, i) => (
-              <Text key={i} style={styles.barLabel}>{d}</Text>
+              <Text key={i} style={[styles.barLabel, { color: t.textMuted }]}>{d}</Text>
             ))}
           </View>
         </View>
 
         {/* Stat grid */}
         <View style={styles.statGrid}>
-          <View style={styles.statMini}>
-            <Text style={styles.statMiniLabel}>STREAK</Text>
-            <Text style={styles.statMiniValue}>7 🔥</Text>
-            <Text style={styles.statMiniDelta}>Best: 12 days</Text>
+          <View style={[styles.statMini, { backgroundColor: t.cardBackground, borderColor: t.cardBorder }]}>
+            <Text style={[styles.statMiniLabel, { color: t.textMuted }]}>STREAK</Text>
+            <Text style={[styles.statMiniValue, { color: t.textPrimary }]}>7 🔥</Text>
+            <Text style={[styles.statMiniDelta, { color: t.scoreGoodText }]}>Best: 12 days</Text>
           </View>
-          <View style={styles.statMini}>
-            <Text style={styles.statMiniLabel}>WORDS</Text>
-            <Text style={styles.statMiniValue}>142</Text>
-            <Text style={styles.statMiniDelta}>↑ 18 this week</Text>
+          <View style={[styles.statMini, { backgroundColor: t.cardBackground, borderColor: t.cardBorder }]}>
+            <Text style={[styles.statMiniLabel, { color: t.textMuted }]}>WORDS</Text>
+            <Text style={[styles.statMiniValue, { color: t.textPrimary }]}>142</Text>
+            <Text style={[styles.statMiniDelta, { color: t.scoreGoodText }]}>↑ 18 this week</Text>
           </View>
         </View>
 
         {/* Needs work */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionLabel}>NEEDS WORK</Text>
+        <View style={[styles.sectionHeader, { borderBottomColor: t.divider }]}>
+          <Text style={[styles.sectionLabel, { color: t.textMuted }]}>NEEDS WORK</Text>
         </View>
         <View style={styles.listCard}>
           {WEAK_WORDS.map((item, index) => (
@@ -98,39 +102,39 @@ export default function ProgressScreen() {
               <View style={styles.wordRow}>
                 <View style={[
                   styles.wordDot,
-                  { backgroundColor: item.dot === 'red' ? '#EF4444' : '#F59E0B' }
+                  { backgroundColor: item.dot === 'red' ? t.scorePoorText : t.scoreAvgText }
                 ]} />
-                <Text style={styles.wordName}>{item.word}</Text>
-                <Text style={styles.wordScore}>{item.score}%</Text>
+                <Text style={[styles.wordName, { color: t.textPrimary }]}>{item.word}</Text>
+                <Text style={[styles.wordScore, { color: t.textMuted }]}>{item.score}%</Text>
               </View>
-              {index < WEAK_WORDS.length - 1 && <View style={styles.divider} />}
+              {index < WEAK_WORDS.length - 1 && <View style={[styles.divider, { backgroundColor: t.divider }]} />}
             </View>
           ))}
         </View>
 
         {/* Session history */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionLabel}>SESSION HISTORY</Text>
+        <View style={[styles.sectionHeader, { borderBottomColor: t.divider }]}>
+          <Text style={[styles.sectionLabel, { color: t.textMuted }]}>SESSION HISTORY</Text>
           <TouchableOpacity>
-            <Text style={styles.seeAll}>See all</Text>
+            <Text style={[styles.seeAll, { color: t.accent }]}>See all</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.listCard}>
           {SESSIONS.map((session, index) => {
-            const ss = getScoreStyle(session.score)
+            const ss = getScoreStyle(session.score, t)
             return (
               <View key={session.name}>
                 <View style={styles.sessionRow}>
-                  <Text style={styles.sessionTime}>{session.time}</Text>
+                  <Text style={[styles.sessionTime, { color: t.textMuted }]}>{session.time}</Text>
                   <View style={styles.sessionInfo}>
-                    <Text style={styles.sessionName}>{session.name}</Text>
-                    <Text style={styles.sessionDetail}>{session.detail}</Text>
+                    <Text style={[styles.sessionName, { color: t.textPrimary }]}>{session.name}</Text>
+                    <Text style={[styles.sessionDetail, { color: t.textMuted }]}>{session.detail}</Text>
                   </View>
                   <View style={[styles.scoreBadge, { backgroundColor: ss.bg }]}>
                     <Text style={[styles.scoreBadgeText, { color: ss.text }]}>{session.score}%</Text>
                   </View>
                 </View>
-                {index < SESSIONS.length - 1 && <View style={styles.divider} />}
+                {index < SESSIONS.length - 1 && <View style={[styles.divider, { backgroundColor: t.divider }]} />}
               </View>
             )
           })}
@@ -142,7 +146,7 @@ export default function ProgressScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colours.background },
+  safe: { flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl },
 
@@ -156,13 +160,10 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: typography.sizes.xl,
     fontWeight: typography.weights.semibold,
-    color: colours.text.primary,
     letterSpacing: -0.4,
   },
   chip: {
-    backgroundColor: '#EAE7E0',
     borderWidth: 1,
-    borderColor: colours.border,
     borderRadius: 100,
     paddingVertical: 5,
     paddingHorizontal: 12,
@@ -170,13 +171,10 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: typography.sizes.xs,
     fontWeight: typography.weights.medium,
-    color: colours.text.primary,
   },
 
   card: {
-    backgroundColor: colours.surface,
     borderWidth: 1,
-    borderColor: '#DDD8C8',
     borderRadius: 18,
     padding: spacing.lg,
     marginBottom: spacing.md,
@@ -184,20 +182,17 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: typography.sizes.xs,
     fontWeight: typography.weights.medium,
-    color: colours.text.muted,
     letterSpacing: 0.8,
     marginBottom: spacing.sm,
   },
   bigScore: {
     fontSize: 52,
     fontWeight: typography.weights.bold,
-    color: colours.text.primary,
     letterSpacing: -2,
     lineHeight: 56,
   },
   bigScoreDelta: {
     fontSize: typography.sizes.sm,
-    color: colours.score.green,
     fontWeight: typography.weights.medium,
     marginBottom: spacing.md,
   },
@@ -211,16 +206,13 @@ const styles = StyleSheet.create({
   },
   bar: {
     flex: 1,
-    backgroundColor: '#DDD8C8',
     borderRadius: 4,
   },
-  barHighlight: { backgroundColor: colours.black },
   barLabels: { flexDirection: 'row', gap: 6 },
   barLabel: {
     flex: 1,
     textAlign: 'center',
     fontSize: 9,
-    color: colours.text.muted,
   },
 
   statGrid: {
@@ -230,28 +222,23 @@ const styles = StyleSheet.create({
   },
   statMini: {
     flex: 1,
-    backgroundColor: colours.background,
     borderWidth: 1,
-    borderColor: colours.border,
     borderRadius: 14,
     padding: spacing.md,
   },
   statMiniLabel: {
     fontSize: 10,
     fontWeight: typography.weights.medium,
-    color: colours.text.muted,
     letterSpacing: 0.6,
     marginBottom: 6,
   },
   statMiniValue: {
     fontSize: typography.sizes.xl,
     fontWeight: typography.weights.bold,
-    color: colours.text.primary,
     letterSpacing: -0.5,
   },
   statMiniDelta: {
     fontSize: 10,
-    color: colours.score.green,
     fontWeight: typography.weights.medium,
     marginTop: 2,
   },
@@ -262,18 +249,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colours.border,
     marginBottom: spacing.sm,
   },
   sectionLabel: {
     fontSize: 10,
     fontWeight: typography.weights.medium,
-    color: colours.text.muted,
     letterSpacing: 0.8,
   },
   seeAll: {
     fontSize: typography.sizes.xs,
-    color: colours.text.secondary,
     fontWeight: typography.weights.medium,
   },
 
@@ -289,12 +273,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.medium,
-    color: colours.text.primary,
   },
   wordScore: {
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.semibold,
-    color: colours.text.muted,
   },
 
   sessionRow: {
@@ -305,19 +287,16 @@ const styles = StyleSheet.create({
   },
   sessionTime: {
     fontSize: typography.sizes.xs,
-    color: colours.text.muted,
     minWidth: 40,
   },
   sessionInfo: { flex: 1 },
   sessionName: {
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.medium,
-    color: colours.text.primary,
     marginBottom: 2,
   },
   sessionDetail: {
     fontSize: typography.sizes.xs,
-    color: colours.text.muted,
   },
   scoreBadge: {
     paddingVertical: 3,
@@ -328,5 +307,5 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.xs,
     fontWeight: typography.weights.bold,
   },
-  divider: { height: 1, backgroundColor: '#E4E1DA' },
+  divider: { height: 1 },
 })

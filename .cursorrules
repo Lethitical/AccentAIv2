@@ -1,0 +1,232 @@
+# AccentAI – Project Rules
+
+## What This App Is
+AccentAI is an iOS mobile app built with Expo Router and TypeScript.
+It is an accent training app that helps users improve their spoken
+English by reading passages aloud and receiving real-time AI scoring.
+The target user is a native English speaker wanting to refine their
+accent toward British RP or American General American.
+
+## Tech Stack
+- Framework: Expo (Expo Router for navigation)
+- Language: TypeScript (.tsx files)
+- Platform: iOS first (React Native)
+- Font: Outfit (via @expo-google-fonts/outfit)
+- Icons: @expo/vector-icons (Ionicons, stroke style only)
+- Navigation: Expo Router tab-based navigation, 4 tabs
+
+## File Structure
+app/
+  _layout.tsx        → root layout, tab navigator
+  (tabs)/
+    index.tsx        → Home screen
+    practice.tsx     → Practice screen
+    progress.tsx     → Progress screen
+    settings.tsx     → Settings screen
+constants/
+  colours.ts         → ALL colour tokens, dark + light mode
+  typography.ts      → font sizes, weights, line heights
+  spacing.ts         → spacing scale
+components/
+  Ringstat.tsx       → reusable accuracy ring component
+  SessionRow.tsx     → reusable recent session row
+  StatCard.tsx       → reusable dark stat card
+
+## Design System — NEVER deviate from this
+
+### Light Mode (Indigo)
+- Page background:    #eef0f8
+- Card background:    #ffffff
+- Card border:        #d0d4e8
+- Section background: #eef0f8
+- Primary text:       #181c30
+- Muted text:         #9098b0
+- Divider:            #eaecf4
+- Accent:             #4f62d0 (indigo blue)
+- Accent secondary:   #6ee7f7 (cyan — trend/highlight only)
+- CTA button bg:      #4f62d0
+- CTA button text:    #ffffff
+- Stat card bg:       #181c30 (dark card on light bg — intentional)
+- Stat card text:     #e0e4f8
+- Stat card muted:    #4a5080
+- Stat card ring:     #4f62d0
+- Stat card border:   #2a3060
+- Toggle on:          #4f62d0
+- Toggle off:         #e0e4ee
+- Nav active:         #4f62d0
+- Nav inactive:       #b0b8d0
+- Score good (75%+):  #e8ebf8 bg / #4f62d0 text
+- Score avg (50-74%): #fef9e8 bg / #c09010 text
+- Score poor (<50%):  #fde8e8 bg / #c03030 text
+
+### Dark Mode (Indigo Dark)
+- Page background:    #0e1020
+- Card background:    #141830
+- Card border:        #1e2448
+- Primary text:       #c8d0f0
+- Muted text:         #3a4060
+- Divider:            #1a2040
+- Accent:             #6680f0 (brighter indigo for dark bg)
+- Accent secondary:   #50d8f0 (cyan — trend/highlight only)
+- CTA button bg:      #6680f0
+- CTA button text:    #ffffff
+- Stat ring:          #6680f0
+- Stat ring track:    #1a2040
+- Toggle on:          #6680f0
+- Nav active:         #6680f0
+- Nav inactive:       #2a3460
+- Score good (75%+):  #1a2252 bg / #6680f0 text
+- Score avg (50-74%): #2a2010 bg / #d0a030 text
+- Score poor (<50%):  #2a1010 bg / #d05050 text
+
+### Typography (Outfit font throughout)
+- Wordmark:           13px weight 700 tracking -0.3px
+- Screen title:       20px weight 700 tracking -0.6px
+- Section label:      9px weight 700 tracking 1.3px UPPERCASE
+- Card title:         15-16px weight 700 tracking -0.4px
+- Body:               12-13px weight 400 line-height 1.7
+- Meta/caption:       10px weight 400
+- Stat number large:  40-48px weight 700-800 tracking -2.5px
+- Stat number small:  16-17px weight 700
+- Ring number:        13-15px weight 700
+
+### Spacing
+- Horizontal page padding:  14px
+- Card padding:             14-16px
+- Card border radius:       20px
+- Small card border radius: 14-16px
+- Button border radius:     11-12px
+- Badge border radius:      8-10px
+- Gap between cards:        12px
+- Section gap:              18-20px
+
+### Key Component Patterns
+
+#### RingStat (accuracy ring)
+- Always dark card (#141830 dark / #181c30 light) regardless of mode
+- 70x70px ring, 6px track, 6px fill
+- Track colour: #1a2040 (dark) / #2a3060 (light)
+- Fill colour: accent
+- Centre text: percentage, weight 700, 14-15px, white
+- Below ring: label row with dividers between streak / words / trend
+- Trend always uses cyan accent (#50d8f0 dark / #6ee7f7 light)
+
+#### SessionRow
+- No card wrapper — flat rows with bottom divider
+- 38x38px score badge, border-radius 10px
+- Badge colour from score bracket (good/avg/poor tokens above)
+- Session name: 12px weight 600
+- Meta line: 10px muted
+
+#### NavBar
+- 4 tabs: Home (house), Practice (mic), Progress (bar chart), Settings (cog)
+- Ionicons stroke style only — NEVER filled icons
+- Active tab: accent colour icon + accent label weight 600
+- Inactive tab: nav inactive colour
+- Always sticky bottom, always has top border divider
+
+#### GB/US Toggle
+- Vertical pill, rounded 10-12px
+- Active: accent bg, white text weight 700
+- Inactive: transparent, muted text
+- Always top-right of screen header or inside hero card
+
+#### Toggle Switch (settings)
+- 38x22px pill
+- On: accent colour bg, white thumb right
+- Off: muted bg, white thumb left
+- Thumb: 18x18px white circle with subtle shadow
+
+#### Progress Bars (word scores)
+- 60px wide, 4px height, border-radius 3px
+- Track: divider colour
+- Fill: accent (good), amber (avg), red (poor)
+- Score label right-aligned, 10px weight 700
+
+## Colour Mode Rules
+- ALWAYS use useColorScheme() from react-native
+- ALWAYS import ALL colours from constants/colours.ts
+- NEVER hardcode any hex value inside a component file
+- Usage pattern: const t = scheme === 'dark' ? tokens.dark : tokens.light
+- The RingStat card is ALWAYS dark regardless of mode — this is intentional
+
+## Code Rules
+- NEVER hardcode hex colours in component files
+- NEVER use emoji as icons
+- NEVER use filled Ionicons — stroke only
+- ALWAYS use StyleSheet.create() — never inline style objects
+- ALWAYS use SafeAreaView as root container
+- ALWAYS use ScrollView on screens where content may overflow
+- ALWAYS use TypeScript — no .js files, no 'any' types
+- Keep each screen file under 300 lines — extract to /components if needed
+- Shared components go in /components with their own Props type
+
+## Screen-by-Screen Spec
+
+### Home (index.tsx)
+- Sticky status bar + sticky bottom nav
+- Greeting: date muted above, large bold name greeting left, GB/US toggle top-right
+- RingStat card: accuracy ring + streak / words / trend stats
+- Up Next card: white card, session name, meta, 7-bar week progress, CTA button
+- Weekly bar chart: 7 bars M-S, filled vs unfilled
+- Recent Sessions: flat list of SessionRows, 4 visible before scroll
+
+### Practice (practice.tsx)
+- Header: passage name muted above, "Speak aloud" title, GB/US toggle
+- Passage card: white card, highlighted key words in accent tint
+- Live Score card: always dark, RingStat ring + pronunciation/rhythm progress bars
+- Audio waveform: white card, bar visualiser
+- Record button: large circle button centred, mic icon, accent bg
+- Below button: status label ("Recording… tap to stop" / "Tap to start")
+
+### Progress (progress.tsx)
+- Header: "Your journey" muted above, "Progress" title
+- Accuracy trend card: dark card, SVG line chart, 7d/30d toggle pills top-right
+- Streak calendar card: dark card, 7-column grid, today highlighted with cyan border
+- Best words card: dark card, top 2-3 words with indigo fill bars + percentages
+- Needs work card: dark card, bottom 2-3 words with red/amber fill bars
+
+### Settings (settings.tsx)
+- Avatar header: indigo circle with initials, name bold, streak + accuracy subtitle
+- Profile section: white card, Name row (chevron), Default accent toggle
+- Appearance section: white card, Dark mode toggle switch
+- Notifications section: white card, Daily reminder row + time, Streak alerts toggle
+- About section: white card, Version row, Privacy policy row (chevron)
+
+
+## App Data Model (current, will expand)
+User:
+  - name: string
+  - streak: number
+  - totalWords: number
+  - accuracy: number (0-100)
+  - accentMode: 'GB' | 'US'
+
+Session:
+  - id: string
+  - name: string        e.g. "Reading Passage 3"
+  - meta: string        e.g. "14 words · British · Today"
+  - score: number       0-100
+  - result: 'good' | 'avg' | 'poor'
+  - date: string
+
+Passage:
+  - id: string
+  - title: string
+  - body: string
+  - wordCount: number
+  - accentMode: 'GB' | 'US'
+  - highlightedWords: string[]   key words to highlight in the passage card
+
+LiveScore:
+  - overall: number
+  - pronunciation: number
+  - rhythm: number
+  - isRecording: boolean
+
+## What to Always Do Before Writing Code
+1. Read ALL rules above
+2. Import colours from constants/colours.ts only
+3. Check which screen/component you are editing
+4. Match the design system exactly — no improvising
+5. If anything is unclear, ask before assuming

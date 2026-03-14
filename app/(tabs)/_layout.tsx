@@ -1,33 +1,29 @@
 import { Tabs } from 'expo-router'
-import { Text } from 'react-native'
+import { useColorScheme } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { colours } from '../../constants/colours'
 
-function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
-  return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.35 }}>
-      {emoji}
-    </Text>
-  )
-}
-
 export default function TabLayout() {
+  const scheme = useColorScheme()
+  const t = scheme === 'dark' ? colours.dark : colours.light
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colours.background,
-          borderTopColor: colours.border,
+          backgroundColor: t.background,
+          borderTopColor: t.divider,
           borderTopWidth: 1,
           paddingBottom: 20,
           paddingTop: 10,
           height: 70,
         },
-        tabBarActiveTintColor: colours.black,
-        tabBarInactiveTintColor: colours.text.muted,
+        tabBarActiveTintColor: t.navActive,
+        tabBarInactiveTintColor: t.navInactive,
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '500',
+          fontWeight: '600',
         },
       }}
     >
@@ -35,8 +31,12 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ focused }: { focused: boolean }) => (
-            <TabIcon emoji="🏠" focused={focused} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name="home-outline"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -44,8 +44,12 @@ export default function TabLayout() {
         name="practice"
         options={{
           title: 'Practice',
-          tabBarIcon: ({ focused }: { focused: boolean }) => (
-            <TabIcon emoji="🎙️" focused={focused} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name="mic-outline"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -53,8 +57,12 @@ export default function TabLayout() {
         name="progress"
         options={{
           title: 'Progress',
-          tabBarIcon: ({ focused }: { focused: boolean }) => (
-            <TabIcon emoji="📊" focused={focused} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name="bar-chart-outline"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -62,8 +70,12 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ focused }: { focused: boolean }) => (
-            <TabIcon emoji="⚙️" focused={focused} />
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name="settings-outline"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
