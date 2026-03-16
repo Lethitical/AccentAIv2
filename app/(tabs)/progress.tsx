@@ -5,11 +5,11 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  useColorScheme,
 } from 'react-native'
 import { colours } from '../../constants/colours'
 import { spacing } from '../../constants/spacing'
 import { typography } from '../../constants/typography'
+import { useTheme } from '../../hooks/useTheme'
 
 const BARS = [40, 55, 45, 65, 60, 70, 78]
 const BAR_DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -34,8 +34,8 @@ function getScoreStyle(score: number, t: typeof colours.light | typeof colours.d
 }
 
 export default function ProgressScreen() {
-  const scheme = useColorScheme()
-  const t = scheme === 'dark' ? colours.dark : colours.light
+  const { isDark } = useTheme()
+  const t = isDark ? colours.dark : colours.light
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: t.background }]}>

@@ -5,13 +5,13 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  useColorScheme,
   StatusBar,
   SafeAreaView,
 } from 'react-native'
 import { colours } from '../../constants/colours'
 import { typography } from '../../constants/typography'
 import { spacing } from '../../constants/spacing'
+import { useTheme } from '../../hooks/useTheme'
 
 type AccentMode = 'GB' | 'US'
 type SessionResult = 'good' | 'avg' | 'poor'
@@ -120,8 +120,8 @@ function SessionRow({
 }
 
 export default function HomeScreen() {
-  const scheme = useColorScheme()
-  const t = scheme === 'dark' ? colours.dark : colours.light
+  const { isDark } = useTheme()
+  const t = isDark ? colours.dark : colours.light
   const [accentMode, setAccentMode] = useState<AccentMode>('GB')
 
   const accuracy = 78
@@ -133,7 +133,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: t.background }]}>
-      <StatusBar barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}

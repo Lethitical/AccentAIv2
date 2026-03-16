@@ -6,18 +6,17 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Switch,
-  useColorScheme,
 } from 'react-native'
 import { useState } from 'react'
 import { colours } from '../../constants/colours'
 import { spacing } from '../../constants/spacing'
 import { typography } from '../../constants/typography'
+import { useTheme } from '../../hooks/useTheme'
 
 export default function SettingsScreen() {
-  const scheme = useColorScheme()
-  const t = scheme === 'dark' ? colours.dark : colours.light
+  const { isDark, toggleTheme } = useTheme()
+  const t = isDark ? colours.dark : colours.light
   const [accent, setAccent] = useState<'british' | 'american'>('british')
-  const [darkMode, setDarkMode] = useState(false)
   const [notifications, setNotifications] = useState(true)
 
   return (
@@ -83,8 +82,8 @@ export default function SettingsScreen() {
               <Text style={[styles.rowSub, { color: t.textMuted }]}>Change app appearance</Text>
             </View>
             <Switch
-              value={darkMode}
-              onValueChange={setDarkMode}
+              value={isDark}
+              onValueChange={toggleTheme}
               trackColor={{ false: t.toggleOff, true: t.toggleOn }}
               thumbColor={t.white}
             />

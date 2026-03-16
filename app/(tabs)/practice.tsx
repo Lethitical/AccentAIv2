@@ -5,12 +5,12 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  useColorScheme,
 } from 'react-native'
 import { useState } from 'react'
 import { colours } from '../../constants/colours'
 import { spacing } from '../../constants/spacing'
 import { typography } from '../../constants/typography'
+import { useTheme } from '../../hooks/useTheme'
 
 const PASSAGE = [
   { id: '1', word: 'The', score: 92 },
@@ -41,8 +41,8 @@ function getWordColour(score: number | null, t: typeof colours.light | typeof co
 }
 
 export default function PracticeScreen() {
-  const scheme = useColorScheme()
-  const t = scheme === 'dark' ? colours.dark : colours.light
+  const { isDark } = useTheme()
+  const t = isDark ? colours.dark : colours.light
   const [mode, setMode] = useState<'passage' | 'word'>('passage')
   const [accent, setAccent] = useState<'british' | 'american'>('british')
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy')
